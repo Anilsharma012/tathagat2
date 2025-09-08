@@ -118,6 +118,16 @@ const CourseOverview = () => {
 
   const visibleCourses = useMemo(()=> courses.filter(c => allowedCourseIds.includes(c.id)), [courses, allowedCourseIds]);
 
+  // Ensure selected course stays within the visible (batch + purchased) set
+  useEffect(() => {
+    if (!visibleCourses.length) return;
+    const isVisible = !!visibleCourses.find(c => String(c.id) === String(courseId));
+    if (!isVisible) {
+      const first = visibleCourses[0];
+      if (first) navigate(`/overview/${first.id}/${studentId}`, { replace: true });
+    }
+  }, [batchId, visibleCourses, courseId, studentId, navigate]);
+
   const onSelectCourse = (e) => {
     const newId = e.target.value;
     if (!newId) return;
