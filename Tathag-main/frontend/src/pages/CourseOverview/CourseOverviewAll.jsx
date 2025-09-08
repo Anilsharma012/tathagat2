@@ -45,7 +45,7 @@ const CourseOverviewAll = () => {
       setSending(true);
       // 1) Copy content via enhanced copy-structure
       if (opts.copyContent) {
-        await http.post('/courses/copy-structure', { sourceCourseId: sourceId, targetCourseId: targetId, mode: opts.mergeIfExists ? 'MERGE' : 'OVERWRITE', includeSectionalTests: true });
+        await http.post('/courses/copy-structure', { sourceCourseId: sourceId, targetCourseId: targetId, mode: opts.mergeIfExists ? 'MERGE' : 'OVERWRITE', includeSectionalTests: true }, { timeout: 180000 });
       }
 
       // 2) Copy schedules (avoid duplicates by title+startTime)
