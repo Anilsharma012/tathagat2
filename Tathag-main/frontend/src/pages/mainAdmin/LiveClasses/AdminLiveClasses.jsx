@@ -6,6 +6,7 @@ import CalendarView from '../../../components/LiveClasses/CalendarView';
 import LiveClassForm from '../../../components/LiveClasses/LiveClassForm';
 import '../../../components/LiveClasses/liveClasses.css';
 import StatsCards from '../../../components/LiveClasses/StatsCards';
+import { useNavigate } from 'react-router-dom';
 import { fetchLiveClasses, createLiveClass, updateLiveClass, deleteLiveClass, postNotify } from '../../../utils/liveClassesApi';
 import http from '../../../utils/http';
 import { getCache, setCache, shouldRevalidate } from '../../../utils/liveClassesCache';
@@ -13,6 +14,7 @@ import { getCache, setCache, shouldRevalidate } from '../../../utils/liveClasses
 const scope = 'admin';
 
 const AdminLiveClasses = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({});
   const [tab, setTab] = useState('list');
   const [items, setItems] = useState([]);
@@ -175,6 +177,10 @@ const AdminLiveClasses = () => {
         </div>
         <div className="lc-actions">
           <button className="lc-btn" onClick={refresh} disabled={loading}>Refresh List</button>
+          <button className="lc-btn primary" onClick={()=>{
+            if (!filters.courseId) { alert('Please select a course'); return; }
+            navigate(`/overview/${filters.courseId}/all`);
+          }}>Overview</button>
         </div>
       </div>
 
@@ -188,6 +194,10 @@ const AdminLiveClasses = () => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href=url; a.download=`${it.title}.ics`; document.body.appendChild(a); a.click(); setTimeout(()=>{ window.URL.revokeObjectURL(url); document.body.removeChild(a); },0);
               } catch { toast.error('ICS download failed'); }
+            }} onOverview={(it)=>{
+              const cid = it.courseId?._id || it.courseId;
+              if (!cid) { alert('Missing course id'); return; }
+              navigate(`/overview/${cid}/all`);
             }} />
           </div>
         )}

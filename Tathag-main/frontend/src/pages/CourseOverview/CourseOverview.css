@@ -1,0 +1,32 @@
+.co-container{padding:8px}
+.co-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.co-title-wrap{display:flex;align-items:center;gap:10px}
+.co-thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;border:1px solid #e5e7eb;box-shadow:0 6px 18px rgba(0,0,0,.04)}
+.co-progress{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.06);margin:8px 0}
+.co-progress-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.co-progress-label{font-weight:700;color:#111}
+.co-progress-val{font-weight:700;color:#1e40af}
+.co-progress-bar{height:10px;border-radius:999px;background:#f1f5f9;overflow:hidden}
+.co-progress-fill{height:100%;background:#1e40af}
+.co-grid{align-items:start}
+.co-section-title{margin:0 0 8px;color:#111;font-weight:700}
+.co-note{margin:12px 0}
+.co-chapter-list{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.co-chapter-item{display:flex;align-items:center;gap:8px}
+.co-chapter-dot{width:6px;height:6px;border-radius:50%;background:#94a3b8;display:inline-block}
+.co-chapter-name{font-size:13px;color:#111}
+
+/* All courses grid */
+.co-cards-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.co-card-thumb-wrap{width:100%;height:120px;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;background:#f8fafc;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.co-card-thumb{width:100%;height:100%;object-fit:cover}
+.co-thumb-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#334155}
+
+/* Modal */
+.co-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:70}
+.co-modal{background:#fff;border:1px solid #e5e7eb;border-radius:12px;min-width:320px;max-width:92vw;box-shadow:0 16px 48px rgba(0,0,0,.18)}
+.co-modal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f1f5f9}
+.co-modal-body{padding:12px 16px}
+.co-checks{display:flex;flex-direction:column;gap:6px}
+.co-check{display:flex;gap:8px;align-items:center;color:#111}
+.co-modal-actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid #f1f5f9}
