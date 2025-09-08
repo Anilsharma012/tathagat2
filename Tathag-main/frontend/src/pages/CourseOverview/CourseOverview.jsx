@@ -253,7 +253,7 @@ const CourseOverview = () => {
                 if (!targetId) { alert('Select target'); return; }
                 try {
                   setSending(true);
-                  await http.post('/courses/copy-structure', { sourceCourseId: courseId, targetCourseId: targetId, mode: sendOpts.mergeIfExists ? 'MERGE' : 'OVERWRITE', includeSectionalTests: true });
+                  await http.post('/courses/copy-structure', { sourceCourseId: courseId, targetCourseId: targetId, mode: sendOpts.mergeIfExists ? 'MERGE' : 'OVERWRITE', includeSectionalTests: true }, { timeout: 180000 });
                   setSendOpen(false);
                   alert(`Sent to ${courses.find(c=>c.id===targetId)?.title||'target'}`);
                 } catch(e){
