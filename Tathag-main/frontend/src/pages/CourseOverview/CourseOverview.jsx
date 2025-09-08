@@ -27,6 +27,8 @@ const CourseOverview = () => {
   const [batches, setBatches] = useState([]);
   const [batchId, setBatchId] = useState('');
   const [studentCourses, setStudentCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [chaptersBySubject, setChaptersBySubject] = useState({});
 
   useEffect(() => {
     let mounted = true;
@@ -68,6 +70,29 @@ const CourseOverview = () => {
           } catch {}
         }
         if (mounted) setCourse(c);
+
+        // Load full course content (subjects + chapters)
+        try {
+          const subRes = await http.get(`/subjects/${courseId}`);
+          const subs = subRes.data?.subjects || [];
+          if (mounted) setSubjects(subs);
+          // Fetch chapters for all subjects in parallel
+          try {
+            const pairs = await Promise.all(subs.map(async (s) => {
+              try {
+                const ch = await http.get(`/chapters/${s._id}`);
+                return [s._id, ch.data?.chapters || []];
+              } catch {
+                return [s._id, []];
+              }
+            }));
+            if (mounted) {
+              const map = {};
+              for (const [sid, arr] of pairs) map[sid] = arr;
+              setChaptersBySubject(map);
+            }
+          } catch {}
+        } catch {}
 
         // Progress for this student+course (admin endpoint)
         try {
@@ -134,11 +159,6 @@ const CourseOverview = () => {
     <div className="co-container">
       <div className="co-header">
         <div className="co-title-wrap">
-          {course?.thumbnail ? (
-            <Link to={`/overview/${courseId}/${studentId}`} className="co-thumb-link" aria-label="Open course overview">
-              <img src={course.thumbnail} alt={course?.name || 'Course'} className="co-thumb" />
-            </Link>
-          ) : null}
           <div>
             <h1 className="lc-page-title">Course Overview</h1>
             <div className="lc-muted">{course?.name || 'Course'} · Student: {studentId}</div>
@@ -162,6 +182,32 @@ const CourseOverview = () => {
         </div>
         <div className="co-progress-bar" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
           <div className="co-progress-fill" style={{ width: `${Math.max(0, Math.min(100, progress))}%` }} />
+        </div>
+      </div>
+
+      <div className="co-section">
+        <h3 className="co-section-title">Course Content</h3>
+        <div className="lc-card-list">
+          {subjects.map(sub => (
+            <div key={sub._id} className="lc-card">
+              <div className="lc-card-header">
+                <div className="lc-title">{sub.name}</div>
+                <span className="lc-badge">{(chaptersBySubject[sub._id]||[]).length} chapters</span>
+              </div>
+              <ul className="co-chapter-list">
+                {(chaptersBySubject[sub._id]||[]).map(ch => (
+                  <li key={ch._id} className="co-chapter-item">
+                    <span className="co-chapter-dot" />
+                    <span className="co-chapter-name">{ch.name}</span>
+                  </li>
+                ))}
+                {!(chaptersBySubject[sub._id]||[]).length && (
+                  <li className="co-chapter-item"><span className="co-chapter-name lc-muted">No chapters</span></li>
+                )}
+              </ul>
+            </div>
+          ))}
+          {!subjects.length && <div className="lc-card"><div className="lc-muted">No subjects found</div></div>}
         </div>
       </div>
 
