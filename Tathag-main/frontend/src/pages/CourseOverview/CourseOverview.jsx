@@ -29,6 +29,11 @@ const CourseOverview = () => {
   const [studentCourses, setStudentCourses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [chaptersBySubject, setChaptersBySubject] = useState({});
+  const [sendOpen, setSendOpen] = useState(false);
+  const [sendSourceSubject, setSendSourceSubject] = useState(null);
+  const [targetId, setTargetId] = useState('');
+  const [sendOpts, setSendOpts] = useState({ chapters:true, quizzes:true, questions:true, attachments:true, mergeIfExists:true });
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -205,11 +210,60 @@ const CourseOverview = () => {
                   <li className="co-chapter-item"><span className="co-chapter-name lc-muted">No chapters</span></li>
                 )}
               </ul>
+              <div className="lc-card-actions" style={{gridTemplateColumns:'repeat(1,minmax(0,1fr))'}}>
+                <button className="lc-btn primary" onClick={()=>{ setSendSourceSubject(sub); setTargetId(''); setSendOpen(true); }}>Send</button>
+              </div>
             </div>
           ))}
           {!subjects.length && <div className="lc-card"><div className="lc-muted">No subjects found</div></div>}
         </div>
       </div>
+
+      {sendOpen && (
+        <div className="co-modal-backdrop" onClick={()=>setSendOpen(false)}>
+          <div className="co-modal" onClick={(e)=>e.stopPropagation()}>
+            <div className="co-modal-header">
+              <div className="lc-title">Send Topic/Section</div>
+              <button className="lc-close" onClick={()=>setSendOpen(false)}>×</button>
+            </div>
+            <div className="co-modal-body">
+              <div className="lc-field">
+                <label>Target Course</label>
+                <select className="lc-filter" value={targetId} onChange={(e)=>setTargetId(e.target.value)}>
+                  <option value="">Select course</option>
+                  {courses.filter(c=>String(c.id)!==String(courseId)).map(c=> (
+                    <option key={c.id} value={c.id}>{c.title}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="lc-field">
+                <label>Options</label>
+                <div className="co-checks">
+                  <label className="co-check"><input type="checkbox" checked={sendOpts.chapters} onChange={e=>setSendOpts({...sendOpts, chapters:e.target.checked})} /> Chapters</label>
+                  <label className="co-check"><input type="checkbox" checked={sendOpts.quizzes} onChange={e=>setSendOpts({...sendOpts, quizzes:e.target.checked})} /> Quizzes</label>
+                  <label className="co-check"><input type="checkbox" checked={sendOpts.questions} onChange={e=>setSendOpts({...sendOpts, questions:e.target.checked})} /> Questions</label>
+                  <label className="co-check"><input type="checkbox" checked={sendOpts.attachments} onChange={e=>setSendOpts({...sendOpts, attachments:e.target.checked})} /> Attachments</label>
+                  <label className="co-check"><input type="checkbox" checked={sendOpts.mergeIfExists} onChange={e=>setSendOpts({...sendOpts, mergeIfExists:e.target.checked})} /> Merge if exists</label>
+                </div>
+              </div>
+            </div>
+            <div className="co-modal-actions">
+              <button className="lc-btn" onClick={()=>setSendOpen(false)} disabled={sending}>Cancel</button>
+              <button className="lc-btn primary" onClick={async()=>{
+                if (!targetId) { alert('Select target'); return; }
+                try {
+                  setSending(true);
+                  await http.post('/courses/copy-structure', { sourceCourseId: courseId, targetCourseId: targetId, mode: sendOpts.mergeIfExists ? 'MERGE' : 'OVERWRITE', includeSectionalTests: true });
+                  setSendOpen(false);
+                  alert(`Sent to ${courses.find(c=>c.id===targetId)?.title||'target'}`);
+                } catch(e){
+                  alert(e?.response?.data?.message || e.message || 'Send failed');
+                } finally { setSending(false); }
+              }} disabled={sending || !targetId}>{sending?'Sending...':'Send'}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="lc-grid co-grid">
         <div className="co-section">
