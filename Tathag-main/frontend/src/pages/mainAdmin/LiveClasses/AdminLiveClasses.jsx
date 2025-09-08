@@ -177,6 +177,11 @@ const AdminLiveClasses = () => {
         </div>
         <div className="lc-actions">
           <button className="lc-btn" onClick={refresh} disabled={loading}>Refresh List</button>
+          <button className="lc-btn primary" onClick={()=>{
+            if (!filters.courseId) { alert('Please select a course'); return; }
+            const sid = window.prompt('Enter Student ID');
+            if (sid && sid.trim()) navigate(`/course-overview/${filters.courseId}/${sid.trim()}`);
+          }}>Overview</button>
         </div>
       </div>
 
