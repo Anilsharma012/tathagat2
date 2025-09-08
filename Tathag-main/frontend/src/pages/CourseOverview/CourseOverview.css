@@ -11,3 +11,7 @@
 .co-grid{align-items:start}
 .co-section-title{margin:0 0 8px;color:#111;font-weight:700}
 .co-note{margin:12px 0}
+.co-chapter-list{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.co-chapter-item{display:flex;align-items:center;gap:8px}
+.co-chapter-dot{width:6px;height:6px;border-radius:50%;background:#94a3b8;display:inline-block}
+.co-chapter-name{font-size:13px;color:#111}
