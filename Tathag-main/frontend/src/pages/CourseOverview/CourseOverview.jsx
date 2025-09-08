@@ -110,6 +110,14 @@ const CourseOverview = () => {
     .sort((a,b)=> new Date(a.startTime) - new Date(b.startTime))
   , [normalized]);
 
+  const allowedCourseIds = useMemo(()=>{
+    const inBatch = (batches.find(b => b.id === batchId)?.courseIds) || [];
+    const owned = studentCourses.map(c => c.id);
+    return inBatch.length ? inBatch.filter(id => owned.includes(id)) : (owned.length ? owned : courses.map(c=>c.id));
+  }, [batches, batchId, studentCourses, courses]);
+
+  const visibleCourses = useMemo(()=> courses.filter(c => allowedCourseIds.includes(c.id)), [courses, allowedCourseIds]);
+
   const onSelectCourse = (e) => {
     const newId = e.target.value;
     if (!newId) return;
