@@ -308,9 +308,7 @@ const AppContent = () => {
           path="/course-overview/:courseId/:studentId"
           element={
             <PrivateRoute tokenName="adminToken">
-              <React.Suspense fallback={<div />}>
-                {React.createElement(require('./pages/CourseOverview/CourseOverview.jsx').default)}
-              </React.Suspense>
+              <CourseOverview />
             </PrivateRoute>
           }
         />
