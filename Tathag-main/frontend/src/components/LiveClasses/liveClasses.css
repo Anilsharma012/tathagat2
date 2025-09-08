@@ -75,3 +75,4 @@
   .lc-form{grid-template-columns:1fr}
   .lc-table th:last-child,.lc-table td:last-child{min-width:240px}
 }
+.lc-link{color:#1e40af;cursor:pointer;text-decoration:underline}
