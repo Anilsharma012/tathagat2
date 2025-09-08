@@ -1,0 +1,45 @@
+.admin-topbar {
+  position: fixed;
+  top: 0;
+  left: 240px;
+  height: 60px;
+  width: calc(100% - 240px);
+  background-color: var(--admin-surface);
+  color: var(--admin-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 1000;
+  box-shadow: var(--admin-shadow-md);
+  border-bottom: 1px solid var(--admin-border);
+  border-radius: 0 0 var(--admin-radius-xl) var(--admin-radius-xl);
+}
+
+.topbar-title { font-size: 18px; font-weight: 600; }
+
+.topbar-actions { display: flex; align-items: center; gap: 16px; }
+
+.topbar-search {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
+  outline: none;
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
+  font-size: 14px;
+  transition: border var(--admin-transition), box-shadow var(--admin-transition);
+}
+.topbar-search:focus { border-color: var(--admin-primary); box-shadow: var(--admin-focus); }
+
+.topbar-profile img {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--admin-border);
+}
+
+@media (max-width: 1024px) {
+  .admin-topbar { left: 72px; width: calc(100% - 72px); }
+}

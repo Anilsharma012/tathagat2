@@ -1,0 +1,48 @@
+.dashboard-container {
+  padding: 20px 30px;
+  background: var(--admin-bg);
+  min-height: 100vh;
+}
+
+.dashboard-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--admin-text);
+}
+
+.dashboard-widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-card {
+  background-color: var(--admin-surface);
+  border-radius: var(--admin-radius-2xl);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--admin-shadow-md);
+  transition: transform var(--admin-transition), box-shadow var(--admin-transition);
+}
+
+.dashboard-card:hover { transform: translateY(-3px); box-shadow: var(--admin-shadow-lg); }
+
+.dashboard-icon {
+  font-size: 18px; /* wrapped in circle via admin-theme */
+}
+
+.dashboard-card h2 {
+  font-size: 22px;
+  margin: 0;
+  color: var(--admin-text);
+  font-weight: 600;
+}
+
+.dashboard-card p {
+  margin: 2px 0 0;
+  color: var(--admin-text-muted);
+  font-size: 14px;
+}

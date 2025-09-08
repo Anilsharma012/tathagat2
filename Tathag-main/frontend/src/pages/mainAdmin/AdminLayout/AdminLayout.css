@@ -1,0 +1,14 @@
+.admin-layout {
+  display: flex;
+  padding-top: 60px;
+}
+
+.admin-main {
+  margin-left: 240px;
+  padding: 24px;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .admin-main { margin-left: 72px; padding: 16px; }
+}
