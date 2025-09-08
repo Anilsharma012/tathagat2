@@ -6,6 +6,7 @@ import CalendarView from '../../../components/LiveClasses/CalendarView';
 import LiveClassForm from '../../../components/LiveClasses/LiveClassForm';
 import '../../../components/LiveClasses/liveClasses.css';
 import StatsCards from '../../../components/LiveClasses/StatsCards';
+import { useNavigate } from 'react-router-dom';
 import { fetchLiveClasses, createLiveClass, updateLiveClass, deleteLiveClass, postNotify } from '../../../utils/liveClassesApi';
 import http from '../../../utils/http';
 import { getCache, setCache, shouldRevalidate } from '../../../utils/liveClassesCache';
