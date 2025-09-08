@@ -125,7 +125,7 @@ const StudentLiveClasses = () => {
       </section>
 
       <section className="lc-two-col-grid">
-        <div className="lc-card">
+        <div className="lc-card lc-col-left">
           <div className="lc-card-header">
             <div className="lc-title">Recorded Classes</div>
           </div>
@@ -152,7 +152,7 @@ const StudentLiveClasses = () => {
           )}
         </div>
 
-        <div className="lc-card">
+        <div className="lc-card lc-col-right">
           <div className="lc-card-header">
             <div className="lc-title">Upcoming Classes</div>
           </div>
