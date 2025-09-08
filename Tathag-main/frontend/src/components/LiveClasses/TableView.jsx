@@ -14,7 +14,7 @@ const TableView = ({ items, onEdit, onDelete, onNotify, onIcs, onView, onOvervie
           <th>Start</th>
           <th>End</th>
           <th>Status</th>
-          {(onEdit || onDelete) && <th>Actions</th>}
+          {(onEdit || onDelete || onNotify || onIcs || onView || onOverview) && <th>Actions</th>}
         </tr>
       </thead>
       <tbody>
