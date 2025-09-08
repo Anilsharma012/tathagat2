@@ -120,6 +120,7 @@ import TeacherLiveClasses from "./pages/MainSubAdmin/LiveClasses/TeacherLiveClas
 import StudentLiveClasses from "./pages/Student/LiveClasses/StudentLiveClasses";
 import PurchaseHistory from "./pages/Student/PurchaseHistory/PurchaseHistory";
 import ViewCourse from "./components/ViewCourse/ViewCourse";
+import CourseOverview from "./pages/CourseOverview/CourseOverview";
 
 // Auto-login functionality is handled in AppContent useEffect
 
