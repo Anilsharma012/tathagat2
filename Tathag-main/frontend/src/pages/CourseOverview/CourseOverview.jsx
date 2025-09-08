@@ -139,8 +139,11 @@ const CourseOverview = () => {
           </div>
         </div>
         <div className="lc-actions">
-          <select className="lc-filter" value={courseId} onChange={onSelectCourse}>
-            {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+          <select className="lc-filter" value={batchId} onChange={(e)=>setBatchId(e.target.value)} aria-label="Select Batch">
+            {batches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+          <select className="lc-filter" value={courseId} onChange={onSelectCourse} aria-label="Select Course">
+            {visibleCourses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
           </select>
           <button className="lc-btn" onClick={() => navigate(-1)}>Back</button>
         </div>
