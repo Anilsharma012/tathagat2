@@ -24,6 +24,9 @@ const CourseOverview = () => {
   const [progress, setProgress] = useState(0);
   const [liveItems, setLiveItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [batches, setBatches] = useState([]);
+  const [batchId, setBatchId] = useState('');
+  const [studentCourses, setStudentCourses] = useState([]);
 
   useEffect(() => {
     let mounted = true;
