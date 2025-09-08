@@ -52,6 +52,19 @@
 .lc-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.08)}
 @media (min-width:900px){.lc-card-actions{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
+/* Week strip */
+.lc-week-strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);gap:12px;overflow-x:auto;padding-bottom:6px}
+.lc-week-day-card{min-width:220px}
+.lc-day-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.lc-day-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #f1f5f9;border-radius:10px;padding:8px;margin-top:8px;background:#fff;cursor:pointer}
+.lc-day-item:hover{background:#f7f9ff}
+.lc-day-info{display:flex;flex-direction:column;gap:2px}
+.lc-time{font-weight:700}
+
+/* Two-column section */
+.lc-two-col-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.lc-thumb{width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:8px}
+
 /* Form layout */
 .lc-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .lc-form .full{grid-column:1 / -1}
@@ -73,6 +86,7 @@
   .lc-calendar{grid-template-columns:1fr 1fr}
   .lc-grid{grid-template-columns:1fr}
   .lc-form{grid-template-columns:1fr}
+  .lc-two-col-grid{grid-template-columns:1fr}
   .lc-table th:last-child,.lc-table td:last-child{min-width:240px}
 }
 .lc-link{color:#1e40af;cursor:pointer;text-decoration:underline}
