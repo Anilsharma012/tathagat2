@@ -121,6 +121,7 @@ import StudentLiveClasses from "./pages/Student/LiveClasses/StudentLiveClasses";
 import PurchaseHistory from "./pages/Student/PurchaseHistory/PurchaseHistory";
 import ViewCourse from "./components/ViewCourse/ViewCourse";
 import CourseOverview from "./pages/CourseOverview/CourseOverview";
+import CourseOverviewAll from "./pages/CourseOverview/CourseOverviewAll";
 
 // Auto-login functionality is handled in AppContent useEffect
 
@@ -318,6 +319,15 @@ const AppContent = () => {
           element={
             <PrivateRoute tokenName="adminToken">
               <CourseOverview />
+            </PrivateRoute>
+          }
+        />
+        {/* All Courses Overview */}
+        <Route
+          path="/overview/all/:studentId?"
+          element={
+            <PrivateRoute tokenName="adminToken">
+              <CourseOverviewAll />
             </PrivateRoute>
           }
         />
