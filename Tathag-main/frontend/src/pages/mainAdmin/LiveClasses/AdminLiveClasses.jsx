@@ -179,8 +179,7 @@ const AdminLiveClasses = () => {
           <button className="lc-btn" onClick={refresh} disabled={loading}>Refresh List</button>
           <button className="lc-btn primary" onClick={()=>{
             if (!filters.courseId) { alert('Please select a course'); return; }
-            const sid = window.prompt('Enter Student ID');
-            if (sid && sid.trim()) navigate(`/overview/${filters.courseId}/${sid.trim()}`);
+            navigate(`/overview/${filters.courseId}/all`);
           }}>Overview</button>
         </div>
       </div>
@@ -198,8 +197,7 @@ const AdminLiveClasses = () => {
             }} onOverview={(it)=>{
               const cid = it.courseId?._id || it.courseId;
               if (!cid) { alert('Missing course id'); return; }
-              const sid = window.prompt('Enter Student ID');
-              if (sid && sid.trim()) navigate(`/overview/${cid}/${sid.trim()}`);
+              navigate(`/overview/${cid}/all`);
             }} />
           </div>
         )}
