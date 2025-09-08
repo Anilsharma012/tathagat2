@@ -14,6 +14,7 @@ import { getCache, setCache, shouldRevalidate } from '../../../utils/liveClasses
 const scope = 'admin';
 
 const AdminLiveClasses = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({});
   const [tab, setTab] = useState('list');
   const [items, setItems] = useState([]);
