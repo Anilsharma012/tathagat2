@@ -62,7 +62,9 @@
 .lc-time{font-weight:700}
 
 /* Two-column section */
-.lc-two-col-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.lc-two-col-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:12px;align-items:start;grid-template-areas:'left right'}
+.lc-two-col-grid .lc-col-left{grid-area:left}
+.lc-two-col-grid .lc-col-right{grid-area:right}
 .lc-thumb{width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:8px}
 
 /* Form layout */
