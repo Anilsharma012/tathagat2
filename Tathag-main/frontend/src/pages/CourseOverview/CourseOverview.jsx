@@ -33,11 +33,27 @@ const CourseOverview = () => {
     const run = async () => {
       try {
         setLoading(true);
+        // Load batches for selection
+        try {
+          const b = await http.get('/admin/academics/batches?with=courses');
+          const blist = (b.data?.batches || []).map(x => ({ id: x.id, name: x.name, courseIds: (x.courses || x.courseIds || []).map(c => c._id || c) }));
+          if (mounted) setBatches(blist);
+          if (mounted && blist.length && !batchId) setBatchId(blist[0].id);
+        } catch {}
+
         // Load all courses for dropdown (admin list)
         try {
           const res = await http.get('/courses');
           const list = (res.data?.courses || res.data || []).map(c => ({ id: c._id, title: c.name || c.title || '-', code: c.code || '', thumbnail: c.thumbnail || '' }));
           if (mounted) setCourses(list);
+        } catch {}
+
+        // Load student's purchased courses
+        try {
+          const paid = await http.get('/admin/paid-users');
+          const user = (paid.data?.users || []).find(u => String(u._id) === String(studentId));
+          const owned = (user?.enrolledCourses || []).filter(ec => (ec.status === 'unlocked') && ec.courseId).map(ec => ({ id: ec.courseId._id, title: ec.courseId.name, thumbnail: ec.courseId.thumbnail || '' }));
+          if (mounted) setStudentCourses(owned);
         } catch {}
 
         // Course details (prefer public endpoint)
