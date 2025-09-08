@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Dashboard.css';
 import './Dashboard-purchases.css';
@@ -78,6 +78,9 @@ const StudentDashboard = () => {
   const [myCoursesLoading, setMyCoursesLoading] = useState(false);
   const [courseProgress, setCourseProgress] = useState({});
   const [upcomingClasses, setUpcomingClasses] = useState([]);
+  const [schedules, setSchedules] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [now, setNow] = useState(new Date());
 
   // Payment History and Receipts state
   const [paymentHistory, setPaymentHistory] = useState([]);
@@ -191,7 +194,7 @@ const StudentDashboard = () => {
 
     // Test API connectivity first
     try {
-      console.log('🔍 Testing API connectivity...');
+      console.log('�� Testing API connectivity...');
       const testResponse = await fetch('/api/test');
       if (testResponse.ok) {
         const testData = await testResponse.json();
@@ -337,15 +340,20 @@ const loadMyCourses = async () => {
     // Also refresh when myCourses change (e.g., after purchase)
   }, [myCourses.length]);
 
+  useEffect(()=>{ const t=setInterval(()=>setNow(new Date()),30000); return ()=>clearInterval(t); },[]);
+
   const hydrateLiveClasses = async () => {
     const scope = 'student-dashboard';
     const cached = getLiveCache(scope);
-    setUpcomingClasses((cached.items || []).slice(0, 5));
+    const cachedItems = cached.items || [];
+    setUpcomingClasses(cachedItems.slice(0, 5));
+    setSchedules(normalizeSchedules(cachedItems));
     if (shouldRevalidateLive(scope)) {
       try {
         const data = await fetchLiveClasses({ role: 'student' });
         setLiveCache(scope, data, {});
         setUpcomingClasses((data || []).slice(0, 5));
+        setSchedules(normalizeSchedules(data || []));
       } catch (_) {
         // silent fail, keep cache
       }
@@ -353,13 +361,44 @@ const loadMyCourses = async () => {
   };
 
   const canJoinClass = (it) => {
-    const now = new Date();
     const start = new Date(it.startTime);
     const end = new Date(it.endTime);
-    return now >= new Date(start.getTime() - 10 * 60000) && now <= new Date(end.getTime() + 30 * 60000);
+    return now >= new Date(start.getTime() - 10 * 60000) && now <= new Date(end.getTime());
   };
 
-  const formatTime = (d) => new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const pad2 = (n) => String(n).padStart(2,'0');
+  const formatTime = (d) => {
+    const dt = new Date(d); let h = dt.getHours(); const m = pad2(dt.getMinutes()); const a = h>=12?'pm':'am'; h = h%12; if(h===0) h=12; return `${h}:${m} ${a}`;
+  };
+  const formatDateTime = (d) => { const dt=new Date(d); const day=pad2(dt.getDate()); const mon=dt.toLocaleString('en-US',{month:'short'}); return `${day} ${mon}, ${formatTime(dt)}`; };
+  const readablePlatform = (p) => (p||'').toString().replace(/_/g,' ').replace(/\b\w/g, m=>m.toUpperCase());
+  const normalizeSchedules = (arr=[]) => (arr||[]).map(x=>({
+    id: x.id || x._id || String(x.id || x._id || ''),
+    courseId: x.courseId?._id || x.courseId || x.course?._id || '',
+    courseTitle: x.courseId?.name || x.course?.name || '',
+    title: x.title || x.name || 'Class',
+    startTime: x.startTime || x.start || x.startsAt,
+    endTime: x.endTime || x.end || x.endsAt,
+    platform: (x.platform || x.provider || 'zoom').toLowerCase().replace(/\s+/g,'_'),
+    joinUrl: x.joinUrl || x.joinLink || x.link || '',
+    recordingUrl: x.recordingUrl || x.recordingLink || x.recording || '',
+    teacher: x.teacher || x.instructor || '',
+    thumbnail: x.thumbnail || x.image || ''
+  }));
+  const isSameDay = (a,b) => { const da=new Date(a), db=new Date(b); return da.getFullYear()===db.getFullYear() && da.getMonth()===db.getMonth() && da.getDate()===db.getDate(); };
+  const startOfWeekMon = (d) => { const dt=new Date(d); const day=dt.getDay(); const diff=(day===0?-6:1)-day; const res=new Date(dt); res.setDate(dt.getDate()+diff); res.setHours(0,0,0,0); return res; };
+  const weekDays = useMemo(()=>{ const s=startOfWeekMon(now); return Array.from({length:7},(_,i)=>{ const dd=new Date(s); dd.setDate(s.getDate()+i); return dd; }); },[now]);
+  const inThisWeek = (d) => { const s=startOfWeekMon(now); const e=new Date(s); e.setDate(s.getDate()+7); const dt=new Date(d); return dt>=s && dt<e; };
+  const weekItems = useMemo(()=> schedules.filter(s=>inThisWeek(s.startTime)), [schedules, now]);
+  const bySelectedCourse = (s) => !selectedCourse || s.courseId===selectedCourse;
+  const recordedItems = useMemo(()=> schedules.filter(s=>bySelectedCourse(s) && (s.recordingUrl || new Date(s.endTime) < now)).sort((a,b)=> new Date(b.startTime)-new Date(a.startTime)), [schedules, selectedCourse, now]);
+  const progress = (()=>{ const total = schedules.filter(bySelectedCourse).length; const completed = schedules.filter(s=>bySelectedCourse(s) && (s.recordingUrl || new Date(s.endTime) < now)).length; const pct = Math.round((completed/Math.max(total,1))*100); return { total, completed, pct }; })();
+  const courseOptions = useMemo(()=>{
+    const fromSched = Array.from(new Map(schedules.map(s=>[s.courseId, { id:s.courseId, title: s.courseTitle || (courses.find(c=>c._id===s.courseId)?.name) || 'Course'}])).values()).filter(x=>x.id);
+    const fromCourses = (courses||[]).map(c=>({ id: c._id, title: c.name })).filter(Boolean);
+    const map = new Map(); [...fromSched, ...fromCourses].forEach(x=>{ if(x.id) map.set(x.id, x); });
+    return [{ id:'', title:'All Courses' }, ...Array.from(map.values())];
+  }, [schedules, courses]);
 
   // Handle payment success redirect
   useEffect(() => {
@@ -1451,44 +1490,90 @@ const loadMyCourses = async () => {
           <h3>This Week's Schedule</h3>
         </div>
         <div className="calendar-grid">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
-            <div key={day} className="calendar-day">
-              <h4>{day}</h4>
-              <div className="day-number">{index + 1}</div>
-              {index % 2 === 0 && (
-                <div className="class-event">
-                  <span className="event-time">2:00 PM</span>
-                  <span className="event-title">Quant Class</span>
-                </div>
-              )}
-            </div>
-          ))}
+          {weekDays.map((d, idx) => {
+            const label = d.toLocaleDateString('en-US', { weekday: 'short' });
+            const items = weekItems.filter(s=> isSameDay(s.startTime, d));
+            return (
+              <div key={idx} className="calendar-day">
+                <h4>{label}</h4>
+                <div className="day-number">{d.getDate()}</div>
+                {items.length===0 ? (
+                  <div className="class-event" style={{opacity:.8}}>No classes</div>
+                ) : items.map(s=>{
+                  const join = canJoinClass(s);
+                  const after = now > new Date(s.endTime);
+                  const hasRec = !!s.recordingUrl;
+                  const startsLabel = `Starts ${formatTime(s.startTime)}`;
+                  const btn = join ? { label:'Join Now', href:s.joinUrl, enabled: !!s.joinUrl, icon:'video' } : after ? (hasRec ? { label:'Watch', href:s.recordingUrl, enabled:true, icon:'play' } : { label:'Ended', href:'', enabled:false, icon:'video' }) : { label: startsLabel, href:'', enabled:false, icon:'video' };
+                  return (
+                    <div key={s.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px',marginTop:'8px'}}>
+                      <div style={{textAlign:'left'}}>
+                        <span className="event-time">{formatTime(s.startTime)}</span>
+                        <span className="event-title"> {s.title}</span>
+                        <span style={{marginLeft:6, fontSize:'0.75rem', opacity:.9}}>· {readablePlatform(s.platform)}</span>
+                      </div>
+                      {btn.enabled ? (
+                        <a className="join-session-btn" href={btn.href} target="_blank" rel="noreferrer" onClick={(e)=>e.stopPropagation()}>{btn.icon==='play'?<FiPlay/>:<FiVideo/>} {btn.label}</a>
+                      ) : (
+                        <button className="join-session-btn" disabled>{btn.icon==='play'?<FiPlay/>:<FiVideo/>} {btn.label}</button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       <div className="upcoming-sessions">
-        <h3>Upcoming Live Sessions</h3>
-        <div className="sessions-list">
-          {[
-            { subject: 'Quantitative Aptitude', topic: 'Number Systems', time: 'Today, 2:00 PM', instructor: 'Prof. Sharma' },
-            { subject: 'Verbal Ability', topic: 'Critical Reasoning', time: 'Tomorrow, 4:00 PM', instructor: 'Prof. Verma' },
-            { subject: 'Data Interpretation', topic: 'Graphs & Charts', time: 'Friday, 3:00 PM', instructor: 'Prof. Singh' }
-          ].map((session, index) => (
-            <div key={index} className="session-card">
-              <div className="session-info">
-                <h4>{session.subject}</h4>
-                <p>{session.topic}</p>
-                <div className="session-meta">
-                  <span><FiClock /> {session.time}</span>
-                  <span><FiUser /> {session.instructor}</span>
-                </div>
-              </div>
-              <button className="join-session-btn">
-                <FiVideo /> Join Live
-              </button>
-            </div>
-          ))}
+        <div className="section-header" style={{marginBottom: '1rem'}}>
+          <h3>Recorded Live Classes</h3>
+          <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+            <span style={{fontSize:'.9rem',color:'#4a5568'}}>Course:</span>
+            <select value={selectedCourse} onChange={(e)=>setSelectedCourse(e.target.value)} style={{padding:'8px 10px',border:'1px solid rgba(0,0,0,0.1)',borderRadius:'8px',background:'#fff'}}>
+              {courseOptions.map(c=> <option key={c.id || 'all'} value={c.id}>{c.title || 'All Courses'}</option>)}
+            </select>
+          </div>
         </div>
+        <div style={{margin:'8px 0 16px 0'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+            <span style={{color:'#1a202c',fontWeight:600}}>Class Progress: {progress.pct}%</span>
+            <span style={{color:'#718096',fontSize:'.85rem'}}>{progress.completed}/{progress.total} completed</span>
+          </div>
+          <div className="progress-bar"><div className="progress-fill" style={{width: `${progress.pct}%`}}></div></div>
+        </div>
+
+        {recordedItems.length===0 ? (
+          <div className="empty-state" style={{padding:'20px 0'}}>
+            <FiClock className="empty-icon" />
+            <h4>No recordings yet</h4>
+          </div>
+        ) : (
+          <div className="courses-grid">
+            {recordedItems.map(s => (
+              <a key={s.id} className="course-card" href={s.recordingUrl || '#'} target="_blank" rel="noreferrer" onClick={(e)=>{ if(!s.recordingUrl){ e.preventDefault(); } }}>
+                {s.thumbnail && (
+                  <div className="course-thumbnail">
+                    <img src={s.thumbnail} alt={s.title} />
+                  </div>
+                )}
+                <div className="course-details">
+                  <div className="course-header">
+                    <h3>{s.title}</h3>
+                    <span className="progress-badge">{readablePlatform(s.platform)}</span>
+                  </div>
+                  <p className="course-description">{formatDateTime(s.startTime)}{s.teacher ? ` • ${s.teacher}` : ''}</p>
+                  <div className="course-actions">
+                    <a className="enroll-btn" href={s.recordingUrl || '#'} target="_blank" rel="noreferrer" onClick={(e)=>{ if(!s.recordingUrl) e.preventDefault(); }}>
+                      <FiPlay /> Watch
+                    </a>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
