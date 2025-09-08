@@ -180,7 +180,7 @@ const AdminLiveClasses = () => {
           <button className="lc-btn primary" onClick={()=>{
             if (!filters.courseId) { alert('Please select a course'); return; }
             const sid = window.prompt('Enter Student ID');
-            if (sid && sid.trim()) navigate(`/course-overview/${filters.courseId}/${sid.trim()}`);
+            if (sid && sid.trim()) navigate(`/overview/${filters.courseId}/${sid.trim()}`);
           }}>Overview</button>
         </div>
       </div>
@@ -195,6 +195,11 @@ const AdminLiveClasses = () => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href=url; a.download=`${it.title}.ics`; document.body.appendChild(a); a.click(); setTimeout(()=>{ window.URL.revokeObjectURL(url); document.body.removeChild(a); },0);
               } catch { toast.error('ICS download failed'); }
+            }} onOverview={(it)=>{
+              const cid = it.courseId?._id || it.courseId;
+              if (!cid) { alert('Missing course id'); return; }
+              const sid = window.prompt('Enter Student ID');
+              if (sid && sid.trim()) navigate(`/overview/${cid}/${sid.trim()}`);
             }} />
           </div>
         )}

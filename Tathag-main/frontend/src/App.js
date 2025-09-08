@@ -312,6 +312,15 @@ const AppContent = () => {
             </PrivateRoute>
           }
         />
+        {/* New Overview alias */}
+        <Route
+          path="/overview/:courseId/:studentId"
+          element={
+            <PrivateRoute tokenName="adminToken">
+              <CourseOverview />
+            </PrivateRoute>
+          }
+        />
 
         {/* Batch Management */}
         <Route

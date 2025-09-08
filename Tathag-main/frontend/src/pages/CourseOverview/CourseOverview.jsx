@@ -20,6 +20,7 @@ const CourseOverview = () => {
   const { courseId, studentId } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
+  const [courses, setCourses] = useState([]);
   const [progress, setProgress] = useState(0);
   const [liveItems, setLiveItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +30,13 @@ const CourseOverview = () => {
     const run = async () => {
       try {
         setLoading(true);
+        // Load all courses for dropdown (admin list)
+        try {
+          const res = await http.get('/courses');
+          const list = (res.data?.courses || res.data || []).map(c => ({ id: c._id, title: c.name || c.title || '-', code: c.code || '', thumbnail: c.thumbnail || '' }));
+          if (mounted) setCourses(list);
+        } catch {}
+
         // Course details (prefer public endpoint)
         let c = null;
         try {
@@ -67,15 +75,34 @@ const CourseOverview = () => {
   }, [courseId, studentId]);
 
   const now = new Date();
-  const recorded = useMemo(() => (liveItems || []).filter(it => new Date(it.endTime) < now), [liveItems]);
-  const upcoming = useMemo(() => (liveItems || []).filter(it => new Date(it.startTime) > now), [liveItems]);
+  const normalized = useMemo(()=> (liveItems||[]).map(it => ({
+    ...it,
+    joinUrl: it.joinUrl || it.joinLink || '',
+    recordingUrl: it.recordingUrl || '',
+  })), [liveItems]);
+
+  const recorded = useMemo(() => normalized
+    .filter(it => !!it.recordingUrl || new Date(it.endTime) < now)
+    .sort((a,b)=> new Date(b.startTime) - new Date(a.startTime))
+  , [normalized]);
+
+  const upcoming = useMemo(() => normalized
+    .filter(it => new Date(it.startTime) > now)
+    .sort((a,b)=> new Date(a.startTime) - new Date(b.startTime))
+  , [normalized]);
+
+  const onSelectCourse = (e) => {
+    const newId = e.target.value;
+    if (!newId) return;
+    navigate(`/overview/${newId}/${studentId}`);
+  };
 
   return (
     <div className="co-container">
       <div className="co-header">
         <div className="co-title-wrap">
           {course?.thumbnail ? (
-            <Link to={`/course-overview/${courseId}/${studentId}`} className="co-thumb-link" aria-label="Open course overview">
+            <Link to={`/overview/${courseId}/${studentId}`} className="co-thumb-link" aria-label="Open course overview">
               <img src={course.thumbnail} alt={course?.name || 'Course'} className="co-thumb" />
             </Link>
           ) : null}
@@ -85,6 +112,9 @@ const CourseOverview = () => {
           </div>
         </div>
         <div className="lc-actions">
+          <select className="lc-filter" value={courseId} onChange={onSelectCourse}>
+            {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+          </select>
           <button className="lc-btn" onClick={() => navigate(-1)}>Back</button>
         </div>
       </div>
@@ -101,7 +131,7 @@ const CourseOverview = () => {
 
       <div className="lc-grid co-grid">
         <div className="co-section">
-          <h3 className="co-section-title">Recorded Videos</h3>
+          <h3 className="co-section-title">Recorded Classes</h3>
           <div className="lc-card-list">
             {recorded.map(it => (
               <div key={it._id} className="lc-card">
@@ -127,18 +157,26 @@ const CourseOverview = () => {
         <div className="co-section">
           <h3 className="co-section-title">Upcoming Classes</h3>
           <div className="lc-card-list">
-            {upcoming.map(it => (
-              <div key={it._id} className="lc-card">
-                <div className="lc-card-header">
-                  <div className="lc-title">{it.title}</div>
-                  <span className={`lc-badge ${it.platform}`}>{it.platform}</span>
+            {upcoming.map(it => {
+              const start = new Date(it.startTime);
+              const can = new Date() >= new Date(start.getTime() - 10 * 60000);
+              return (
+                <div key={it._id} className="lc-card">
+                  <div className="lc-card-header">
+                    <div className="lc-title">{it.title}</div>
+                    <span className={`lc-badge ${it.platform}`}>{it.platform}</span>
+                  </div>
+                  <div className="lc-muted">{formatDate(it.startTime)} · {formatTime(it.startTime)} – {formatTime(it.endTime)}</div>
+                  <div className="lc-card-actions">
+                    {can ? (
+                      <a className="lc-btn primary" href={it.joinUrl} target="_blank" rel="noreferrer">Join Live</a>
+                    ) : (
+                      <button className="lc-btn" disabled>Starts at {formatTime(it.startTime)}</button>
+                    )}
+                  </div>
                 </div>
-                <div className="lc-muted">{formatDate(it.startTime)} · {formatTime(it.startTime)} – {formatTime(it.endTime)}</div>
-                <div className="lc-card-actions">
-                  <a className={`lc-btn ${canJoin(it)?'primary':''}`} href={canJoin(it) ? it.joinLink : undefined} target="_blank" rel="noreferrer" aria-disabled={!canJoin(it)}>{canJoin(it)? 'Join Live' : 'Locked'}</a>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {!upcoming.length && (
               <div className="lc-card"><div className="lc-muted">No upcoming classes</div></div>
             )}
